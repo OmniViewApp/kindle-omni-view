@@ -16,6 +16,7 @@ OmniView is a KUAL-based Kindle plugin that transforms your idle Kindle into a s
 - **Device Binding** - Binds device to server via QR code scanning
 - **Status Display** - Shows runtime status and error messages directly on screen
 - **Graceful Exit** - Automatically returns to Kindle home when stopped
+- **Ultra-long Battery Life** - Lasts for more than a month on a single charge
 
 ---
 
@@ -26,21 +27,21 @@ OmniView is a KUAL-based Kindle plugin that transforms your idle Kindle into a s
 
 ### Software
 - [KUAL](https://www.mobileread.com/forums/showthread.php?t=203326) (Kindle Unified Application Launcher)
-- [fbink](https://github.com/NiLuJe/FBInk) (For screen rendering, typically installed with USBNetwork Hack)
+- [fbink](https://github.com/NiLuJe/FBInk) (For screen rendering, typically installed with USBNetwork Hack or WinterBreak)
 
 ---
 
 ## Screenshots
+
+<div align="center">
+<img src="./assets/kindle-example1.jpg" width="50%" alt="Kindle running OmniView" />
+</div>
 
 <details>
 
 <summary>Click to expand</summary>
 
 ### Kindle Display
-
-<div align="center">
-<img src="./assets/kindle-example1.jpg" width="50%" alt="Kindle running OmniView" />
-</div>
 
 ### Mini Program
 

@@ -16,6 +16,7 @@ OmniView 是一个基于 KUAL 的 Kindle 插件，可将闲置的 Kindle 设备�
 - **设备绑定** - 通过二维码扫描与服务端进行设备绑定
 - **状态显示** - 在屏幕上直观显示运行状态和错误信息
 - **优雅退出** - 停止运行时自动返回 Kindle 主页
+- **超长续航** - 一次充电可以持续使用一个月以上
 
 ---
 
@@ -25,22 +26,19 @@ OmniView 是一个基于 KUAL 的 Kindle 插件，可将闲置的 Kindle 设备�
 - 已越狱的 Kindle 设备 (测试于 Kindle Paperwhite 3)
 
 ### 软件
-- [KUAL](https://www.mobileread.com/forums/showthread.php?t=203326) (Kindle Unified Application Launcher)
-- [fbink](https://github.com/NiLuJe/FBInk) (用于屏幕绘图，通常随 USBNetwork Hack 安装)
+- [KUAL](https://bookfere.com/post/311.html#p_2) (KUAL)
+- [fbink](https://github.com/NiLuJe/FBInk) (用于屏幕绘图，通常随 USBNetwork Hack 或WinterBreak安装)
 
 ---
 
 ## 示例截图
-
-<details>
-
-<summary>点击展开查看</summary>
-
-### Kindle 效果
-
 <div align="center">
 <img src="./assets/kindle-example1.jpg" width="50%" alt="Kindle 运行效果" />
 </div>
+
+<details>
+
+<summary>点击展开查看更多</summary>
 
 ### 微信小程序
 
@@ -82,7 +80,10 @@ OmniView 是一个基于 KUAL 的 Kindle 插件，可将闲置的 Kindle 设备�
 
 <details>
 
-<summary>fbink 安装指南 (如已安装请跳过)</summary>
+<summary>KUAL、fbink 安装指南 (如已安装请跳过)</summary>
+
+#### KUAL
+- [安装教程](https://bookfere.com/post/311.html#p_2)
 
 #### USBNetwork Hack
 
