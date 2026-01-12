@@ -17,8 +17,14 @@
                     "params": ""
                 },
                 {
-                    "name": "Stop Frame",
+                    "name": "Online Update",
                     "priority": 2,
+                    "action": "bin/update.sh",
+                    "params": ""
+                },
+                {
+                    "name": "Stop Frame",
+                    "priority": 3,
                     "action": "bin/stop.sh",
                     "params": ""
                 }
