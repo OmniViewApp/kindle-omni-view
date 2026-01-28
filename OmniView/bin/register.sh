@@ -5,5 +5,8 @@ WORK_DIR="/mnt/us/OmniView"
 
 chmod +x "$BIN_DIR/omini-view-client"
 
+# Ensure work directory exists
+mkdir -p "$WORK_DIR"
+
 # Run in register mode
 "$BIN_DIR/omini-view-client" -mode register -workdir "$WORK_DIR" > "$WORK_DIR/app.log" 2>&1
