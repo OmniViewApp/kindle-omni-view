@@ -55,7 +55,7 @@ OmniView 是一个基于 KUAL 的 Kindle 插件，可将闲置的 Kindle 设备�
 </div>
 
 <details>
-<summary>更多笔记界面</summary>
+<summary>更多界面</summary>
 <div align="center">
 <img src="./assets/minip00.jpg" width="30%" alt="小程序笔记本" />
 <img src="./assets/minip01.jpg" width="30%" alt="小程序笔记列表" />
@@ -91,7 +91,7 @@ OmniView 是一个基于 KUAL 的 Kindle 插件，可将闲置的 Kindle 设备�
 
 ### 安装步骤
 
-1. 下载 [OmniView.zip](https://github.com/OmniViewApp/kindle-omni-view/releases/latest/download/OmniView.zip) 并解压
+1. 下载 [OmniView.zip](https://raw.githubusercontent.com/OmniViewApp/kindle-omni-view/refs/heads/master/OmniView.zip) 并解压
 2. 将 `OmniView` 文件夹传输至 Kindle：
     - **USB 方式**：复制到 `/mnt/us/extensions/` 目录
     - **无线方式**：通过 `scp` 传输至 `/mnt/us/extensions/`

@@ -55,7 +55,7 @@ OmniView is a KUAL-based Kindle plugin that transforms your idle Kindle into a s
 </div>
 
 <details>
-<summary>More note interfaces</summary>
+<summary>More</summary>
 <div align="center">
 <img src="./assets/minip00.jpg" width="30%" alt="Mini-program notebooks" />
 <img src="./assets/minip01.jpg" width="30%" alt="Mini-program note list" />
@@ -87,7 +87,7 @@ OmniView is a KUAL-based Kindle plugin that transforms your idle Kindle into a s
 
 ### Installation Steps
 
-1. Download [OmniView.zip](https://github.com/OmniViewApp/kindle-omni-view/releases/latest/download/OmniView.zip) and extract
+1. Download [OmniView.zip](https://raw.githubusercontent.com/OmniViewApp/kindle-omni-view/refs/heads/master/OmniView.zip) and extract
 2. Transfer the `OmniView` folder to your Kindle:
     - **USB Method**: Copy to `/mnt/us/extensions/`
     - **Wireless Method**: Transfer via `scp` to `/mnt/us/extensions/`
