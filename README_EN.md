@@ -4,74 +4,71 @@
 
 > **A world of wonders in a single frame.**
 
-OmniView is a KUAL-based Kindle plugin that transforms your idle Kindle into a smart E-Ink photo frame or information display.
+OmniView is a KUAL-based Kindle plugin that transforms your idle Kindle into a smart E-Ink photo frame or information display, with support for automatic book and note synchronization.
 
 ---
 
 ## Features
 
+### 🖼️ Smart Photo Frame
 - **Smart Wake-Up** - Leverages Kindle RTC (Real-Time Clock) for deep sleep and scheduled wake-up, significantly extending battery life
-- **Auto Refresh** - Periodically fetches and displays the latest images from the server
-- **Ghosting Prevention** - Automatically clears screen on startup to avoid KUAL menu residue
-- **Device Binding** - Binds device to server via QR code scanning
-- **Status Display** - Shows runtime status and error messages directly on screen
-- **Graceful Exit** - Automatically returns to Kindle home when stopped
-- **Ultra-long Battery Life** - Lasts for more than a month on a single charge
+- **Auto Refresh** - Periodically fetches and displays the latest images/widgets (Weather, Calendar, Quotes) from the server
+- **Aesthetic Views** - Support for custom themes, elegant typography, and dynamic widgets
+- **Ghosting Prevention** - Automatically clears screen on startup to avoid menu residue
 
----
+### 📚 Bookshelf Sync
+- **Note Extraction** - Automatically extracts book info and reading notes (My Clippings.txt) from your Kindle
+- **Silent Background Sync** - Intelligent monitoring of WiFi and wakeup events to sync data without manual intervention
+- **Cloud Management** - View, search, and export your reading notes anytime via the WeChat mini-program
 
-## Requirements
-
-### Hardware
-- Jailbroken Kindle device (tested on Kindle Paperwhite 3)
-
-### Software
-- [KUAL](https://www.mobileread.com/forums/showthread.php?t=203326) (Kindle Unified Application Launcher)
-- [fbink](https://github.com/NiLuJe/FBInk) (For screen rendering, typically installed with USBNetwork Hack or WinterBreak)
+### 🛠️ System Highlights
+- **Flattened Menu** - Optimized KUAL menu structure with all functions directly accessible (only 2 levels deep)
+- **Ultra-long Battery Life** - Lasts for more than a month on a single charge in deep sleep mode
+- **Status Monitoring** - Real-time status display for battery, sync progress, and active modes
 
 ---
 
 ## Screenshots
 
+### 🟢 Smart Photo Frame
 <div align="center">
-<img src="./assets/kindle-example1.jpg" width="50%" alt="Kindle running OmniView" />
+<img src="./assets/kindle-example1.jpg" width="45%" alt="Kindle display" />
+<img src="./assets/kindle-theme01.jpg" width="45%" alt="Theme display" />
+<br>
+<img src="./assets/kindle-theme02.png" width="45%" alt="Theme display 2" />
 </div>
 
 <details>
-
-<summary>Click to expand</summary>
-
-### Kindle Display
-
-### Mini Program
-
+<summary>View more frame styles</summary>
 <div align="center">
-<img src="./assets/omni-view-minipcode.jpg" width="30%" alt="小程序" />
-</div>
-
-<div align="center">
-<img src="./assets/minip00.jpg" width="30%" alt="Mini program 1" />
-<img src="./assets/minip01.jpg" width="30%" alt="Mini program 2" />
-<img src="./assets/minip02.png" width="30%" alt="Mini program 3" />
-<br>
 <img src="./assets/minip03.jpg" width="30%" alt="Mini program 4" />
 <img src="./assets/minip04.jpg" width="30%" alt="Mini program 5" />
 <img src="./assets/minip05.jpg" width="30%" alt="Mini program 6" />
 </div>
+</details>
 
-### Themes
-
+### 🔵 Bookshelf & Notes
 <div align="center">
-<img src="./assets/kindle-theme01.jpg" width="47%" alt="Theme 1" />
-<img src="./assets/kindle-theme02.png" width="47%" alt="Theme 2" />
+<img src="./assets/minip13.jpg" width="28%" alt="Mini-program bookshelf" />
+<img src="./assets/minip11.jpg" width="28%" alt="Book details" />
+<img src="./assets/minip12.jpg" width="28%" alt="Note details" />
 </div>
 
-### Community
-
+<details>
+<summary>More note interfaces</summary>
 <div align="center">
+<img src="./assets/minip00.jpg" width="30%" alt="Mini-program notebooks" />
+<img src="./assets/minip01.jpg" width="30%" alt="Mini-program note list" />
+<img src="./assets/minip02.png" width="30%" alt="Note preview" />
+</div>
+</details>
+
+<details>
+<summary>Click to view Mini-program QR & Community</summary>
+<div align="center">
+<img src="./assets/omni-view-minipcode.jpg" width="30%" alt="Mini-program QR code" />
 <img src="./assets/telegram-group.jpg" width="50%" alt="Telegram Group" />
 </div>
-
 </details>
 
 ---
@@ -81,44 +78,53 @@ OmniView is a KUAL-based Kindle plugin that transforms your idle Kindle into a s
 ### Prerequisites
 
 <details>
-
 <summary>fbink Installation Guide (skip if already installed)</summary>
 
-#### USBNetwork Hack
-
-- [Installation Tutorial](https://bookfere.com/post/59.html) (Chinese)
+#### USBNetwork Hack (includes fbink)
 - [Official Release](https://www.mobileread.com/forums/showthread.php?t=225030)
 
 </details>
 
 ### Installation Steps
 
-1. Download [OnniView.zip](https://raw.githubusercontent.com/OmniViewApp/kindle-omni-view/refs/heads/master/OmniView.zip) and extract
+1. Download [OmniView.zip](https://github.com/OmniViewApp/kindle-omni-view/releases/latest/download/OmniView.zip) and extract
 2. Transfer the `OmniView` folder to your Kindle:
-   - **USB Method**: Copy to `/mnt/us/extensions/` via USB cable
-   - **Wireless Method**: Use `scp` command via USBNetwork
+    - **USB Method**: Copy to `/mnt/us/extensions/`
+    - **Wireless Method**: Transfer via `scp` to `/mnt/us/extensions/`
 3. Disconnect USB cable
 
-### Getting Started
+### Quick Start
 
-1. Open **KUAL** on your Kindle
-2. Click **OmniView** menu
+#### 1. Device Registration (First Time)
+1. Open **KUAL** -> **OmniView** -> **Register Device** on your Kindle
+2. Scan the QR code on screen to bind your device
+3. You're ready to go after successful registration
 
-#### First-Time Setup (Device Registration)
+#### 2. Configure Frame (on Phone)
+1. Open the WeChat mini-program and tap on your bound device
+2. **Select Source**: Upload photos, subscribe to Weather/Calendar widgets, or choose quote libraries
+3. **Set Frequency**: Recommended refresh rate of 1-3 hours to balance battery and real-time updates
 
-1. Click **Register Device**
-2. A QR code will be displayed on screen
-3. Scan the QR code with WeChat to bind your device
-4. Restart the application when prompted
-
-#### Running & Stopping
+#### 3. Running & Stopping
 
 **Start Running**
 - Click **Start Frame** to begin cycling through images
 
 **Stop Running**
-- **Method 1**: Press the power button to wake, wait for `stopping...` to appear, then it will automatically exit to home
+- **Method 1**: Press the power button to wake, wait for `stopping...` to appear, then it will exit automatically to the home screen
 - **Method 2**: Long-press the power button to force shutdown
+
+#### 4. Bookshelf Synchronization
+
+- **Manual Sync**: Tap **Sync Bookshelf** to immediately extract `cc.db` and `My Clippings.txt` and upload them.
+- **Auto-Sync**: Tap **Enable Auto-Sync**. Once enabled, the device will silently sync data in the background whenever a WiFi connection or system wakeup is detected.
+- **Status Check**: Tap **Status** to see the last sync timestamp and listener status at the bottom of the screen.
+
+#### 4. Status Check
+Tap **Status** to briefly display at the bottom:
+- `Auto=Enabled/Disabled`: Auto-sync status
+- `Monitor=Running/Stopped`: Event listener status
+- `LastSync`: Timestamp of the last successful sync
 
 ---
 
@@ -126,17 +132,20 @@ OmniView is a KUAL-based Kindle plugin that transforms your idle Kindle into a s
 
 ### Working Directory
 
+The plugin lives in `extensions/OmniView`, while user configs and logs are stored at:
+
 ```
 /mnt/us/OmniView/
 ├── conf/
-│   └── config.cfg          # User configuration
-├── tmp/                     # Temporary image storage
-└── app.log                  # Runtime log
+│   ├── config.cfg          # Core configuration
+│   └── *.pid               # Process identifier files
+├── logs/
+│   ├── app.log              # Master application log
+│   └── update.log           # Update log
+└── tmp/                     # Cached images
 ```
 
-> **Note**: To keep the system clean, all runtime files are stored in `/mnt/us/OmniView`, not in the plugin directory.
-
-If you encounter any issues, please check the log file at `/mnt/us/OmniView/app.log`.
+If you encounter issues, please check the log file at `/mnt/us/OmniView/logs/app.log`.
 
 ---
 
@@ -144,9 +153,9 @@ If you encounter any issues, please check the log file at `/mnt/us/OmniView/app.
 
 | Issue | Solution |
 |-------|----------|
-| "Server Request Failed" | Check Kindle WiFi connection |
-| OmniView not visible in KUAL | Verify `extensions/OmniView/config.xml` exists |
-| Device registration fails | Check network connection and server status |
+| "Register Failed" | Ensure WiFi is connected and you've created an account in the mini-program |
+| Images not refreshing | Check refresh rate in `config.cfg` or WiFi signal strength |
+| Menu elements missing | Ensure `templates/kual/menu.json` is intact and not truncated |
 
 ---
 

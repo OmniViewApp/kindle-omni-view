@@ -5,28 +5,98 @@
             "priority": 0,
             "items": [
                 {
-                    "name": "Start Frame",
+                    "name": "Register Device (注册设备)",
                     "priority": 0,
-                    "action": "bin/run.sh",
-                    "params": ""
+                    "action": "bin/omniview.sh",
+                    "params": "register",
+                    "exitmenu": false,
+                    "refresh": false
                 },
                 {
-                    "name": "Register Device",
+                    "name": "Start Frame (启动相框)",
                     "priority": 1,
-                    "action": "bin/register.sh",
-                    "params": ""
+                    "action": "bin/omniview.sh",
+                    "params": "start",
+                    "exitmenu": true,
+                    "refresh": false
                 },
                 {
-                    "name": "Online Update",
+                    "name": "Stop Frame (停止相框)",
                     "priority": 2,
-                    "action": "bin/update.sh",
-                    "params": ""
+                    "action": "bin/omniview.sh",
+                    "params": "stop",
+                    "exitmenu": false,
+                    "refresh": false
                 },
                 {
-                    "name": "Stop Frame",
+                    "name": "Clear Cache (清除缓存)",
                     "priority": 3,
-                    "action": "bin/stop.sh",
-                    "params": ""
+                    "action": "bin/omniview.sh",
+                    "params": "clear-cache",
+                    "exitmenu": false,
+                    "refresh": false
+                },
+                {
+                    "name": "Online Update (在线更新)",
+                    "priority": 4,
+                    "action": "bin/omniview.sh",
+                    "params": "update",
+                    "exitmenu": false,
+                    "refresh": false
+                }
+            ]
+        },
+        {
+            "name": "OmniBookShelf",
+            "priority": 1,
+            "items": [
+                {
+                    "name": "Register Device (注册设备)",
+                    "priority": 0,
+                    "action": "bin/omniview.sh",
+                    "params": "register",
+                    "exitmenu": false,
+                    "refresh": false
+                },
+                {
+                    "name": "Sync Now (立即同步)",
+                    "priority": 1,
+                    "action": "bin/omniview.sh",
+                    "params": "sync",
+                    "exitmenu": false,
+                    "refresh": false
+                },
+                {
+                    "name": "View Status (查看状态)",
+                    "priority": 2,
+                    "action": "bin/omniview.sh",
+                    "params": "status",
+                    "exitmenu": false,
+                    "refresh": false
+                },
+                {
+                    "name": "Enable Auto-Sync (启用自动同步)",
+                    "priority": 3,
+                    "action": "bin/omniview.sh",
+                    "params": "enable-autostart",
+                    "exitmenu": false,
+                    "refresh": false
+                },
+                {
+                    "name": "Disable Auto-Sync (禁用自动同步)",
+                    "priority": 4,
+                    "action": "bin/omniview.sh",
+                    "params": "disable-autostart",
+                    "exitmenu": false,
+                    "refresh": false
+                },
+                {
+                    "name": "Uninstall Auto-Sync (卸载自动同步)",
+                    "priority": 5,
+                    "action": "bin/omniview.sh",
+                    "params": "uninstall-autostart",
+                    "exitmenu": false,
+                    "refresh": false
                 }
             ]
         }
