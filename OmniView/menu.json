@@ -1,7 +1,7 @@
 {
     "items": [
         {
-            "name": "OmniView",
+            "name": "OmniView(相框)",
             "priority": 0,
             "items": [
                 {
@@ -47,7 +47,7 @@
             ]
         },
         {
-            "name": "OmniBookShelf",
+            "name": "OmniBookShelf(书架)",
             "priority": 1,
             "items": [
                 {
@@ -97,6 +97,14 @@
                     "params": "uninstall-autostart",
                     "exitmenu": false,
                     "refresh": false
+                },
+                {
+                  "name": "Online Update (在线更新)",
+                  "priority": 6,
+                  "action": "bin/omniview.sh",
+                  "params": "update",
+                  "exitmenu": false,
+                  "refresh": false
                 }
             ]
         }
