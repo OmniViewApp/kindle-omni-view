@@ -8,7 +8,7 @@ BIN_DIR=$(pwd)
 EXT_DIR="/mnt/us/extensions/OmniView"
 WORK_DIR="/mnt/us/OmniView"
 CLIENT_BIN="$BIN_DIR/omniview"
-PID_FILE="$WORK_DIR/conf/omini-view-client.pid"
+PID_FILE="$WORK_DIR/conf/omni-view-frame.pid"
 MONITOR_PID_FILE="$WORK_DIR/conf/event_monitor.pid"
 AUTOSTART_FLAG="/mnt/us/ENABLE_BOOKSHELF_AUTOSTART"
 UPSTART_CONF="/etc/upstart/bookshelf-sync.conf"
@@ -245,27 +245,63 @@ cmd_start() {
     run_client "frame" "app.log" "false"
 }
 
+# Screensaver wallpaper mode: install today's wallpaper as the native
+# screensaver (linkss bg_ss00.png) and enable the event monitor so it
+# auto-refreshes on wake / WiFi connect. Non-intrusive (no framebuffer
+# takeover, normal reading unaffected).
+cmd_start_screensaver() {
+    if ! check_registration; then
+        bottom_msg "Please register device first (请先注册设备)"
+        log "ERROR: Attempted to start screensaver mode without registration"
+        exit 1
+    fi
+
+    # Enable auto-refresh: install upstart + autostart flag + start monitor
+    if [ ! -f "$UPSTART_CONF" ] && [ -f "$SOURCE_UPSTART" ]; then
+        cp "$SOURCE_UPSTART" "$UPSTART_CONF"
+        chmod 644 "$UPSTART_CONF"
+        log "Upstart script installed"
+    fi
+    touch "$AUTOSTART_FLAG"
+    _start_monitor
+
+    # Install today's wallpaper now
+    msg "Installing screensaver wallpaper..."
+    run_client "screensaver" "screensaver.log" "true"
+    bottom_msg "Screensaver wallpaper mode active"
+}
+
 cmd_stop() {
-    if [ ! -f "$PID_FILE" ]; then
-        bottom_msg "OmniView not running"
-        exit 0
-    fi
+    local stopped_any=0
 
-    local pid=$(cat "$PID_FILE")
-    if [ ! -d "/proc/$pid" ]; then
+    # 1. Stop the frame process (if running)
+    if [ -f "$PID_FILE" ]; then
+        local pid=$(cat "$PID_FILE")
+        if [ -d "/proc/$pid" ]; then
+            bottom_msg "Stopping frame..."
+            kill "$pid"
+            sleep 2
+            if [ -d "/proc/$pid" ]; then
+                kill -9 "$pid"
+            fi
+            stopped_any=1
+        fi
         rm -f "$PID_FILE"
-        bottom_msg "Cleaned stale PID"
-        exit 0
     fi
 
-    bottom_msg "Stopping..."
-    kill "$pid"
-    sleep 2
-    if [ -d "/proc/$pid" ]; then
-        kill -9 "$pid"
+    # 2. Stop the event monitor (stops wallpaper + bookshelf auto-refresh)
+    _stop_monitor
+
+    # 3. Restore the user's linkss wallpapers (remove our bg_ss00.png,
+    #    move ss_backup/* back into the screensaver folder)
+    log "Restoring user wallpapers..."
+    run_client "screensaver-restore" "restore.log" "false"
+
+    if [ $stopped_any -eq 1 ]; then
+        bottom_msg "Stopped & wallpapers restored"
+    else
+        bottom_msg "Wallpapers restored"
     fi
-    rm -f "$PID_FILE"
-    bottom_msg "Stopped"
 }
 
 cmd_register() {
@@ -406,6 +442,9 @@ case "$1" in
     "start")
         cmd_start
         ;;
+    "start-screensaver")
+        cmd_start_screensaver
+        ;;
     "stop")
         cmd_stop
         ;;
@@ -441,7 +480,8 @@ case "$1" in
         bottom_msg "Debug log saved to /tmp/omniview-display.log"
         ;;
     *)
-        echo "Usage: $0 {start|stop|register|update|sync|status|clear-cache|enable-autostart|disable-autostart|uninstall-autostart|test}"
+        echo "Usage: $0 {start|start-screensaver|stop|register|update|sync|status|clear-cache|enable-autostart|disable-autostart|uninstall-autostart|test}"
+
         exit 1
         ;;
 esac

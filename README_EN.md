@@ -16,6 +16,13 @@ OmniView is a KUAL-based Kindle plugin that transforms your idle Kindle into a s
 - **Aesthetic Views** - Support for custom themes, elegant typography, and dynamic widgets
 - **Ghosting Prevention** - Automatically clears screen on startup to avoid menu residue
 
+### 🖼️ Screensaver Wallpaper
+- **Daily Wallpaper** - Shows the daily featured image on the Kindle native lock/screensaver screen; normal reading is fully unaffected
+- **Non-intrusive** - No framebuffer takeover, no forced suspend; relies on the linkss hack and the native screensaver
+- **Smart Cache** - The daily image downloads once per day and is shared by both photo-frame and screensaver modes — no duplicate downloads
+- **Auto-restore** - Your existing screensaver images are temporarily backed up and automatically restored; your files are never deleted
+- **Wake = Refresh** - Pulls the latest wallpaper on screen wake (`outOfScreenSaver`) and WiFi connect
+
 ### 📚 Bookshelf Sync
 - **Note Extraction** - Automatically extracts book info and reading notes (My Clippings.txt) from your Kindle
 - **Silent Background Sync** - Intelligent monitoring of WiFi and wakeup events to sync data without manual intervention
@@ -107,12 +114,14 @@ OmniView is a KUAL-based Kindle plugin that transforms your idle Kindle into a s
 
 #### 3. Running & Stopping
 
-**Start Running**
-- Click **Start Frame** to begin cycling through images
+Choose a mode under **KUAL -> OmniView -> Start**:
+
+- **Photo Frame (直接启动相框)** - The classic frame mode; takes over the screen and cycles through images
+- **Screensaver Wallpaper (屏保壁纸模式)** - Installs the daily wallpaper onto the native screensaver and enables auto-refresh (pulls the latest on screen wake / WiFi connect). Normal reading is unaffected
 
 **Stop Running**
-- **Method 1**: Press the power button to wake, wait for `stopping...` to appear, then it will exit automatically to the home screen
-- **Method 2**: Long-press the power button to force shutdown
+- Tap **Stop Frame (停止相框)**: stops the frame, stops the auto-refresh monitor, and restores your original linkss screensaver images
+- Or press the power button to wake from frame mode, wait for `stopping...` to appear, then it will exit to the home screen
 
 #### 4. Bookshelf Synchronization
 
@@ -138,11 +147,15 @@ The plugin lives in `extensions/OmniView`, while user configs and logs are store
 /mnt/us/OmniView/
 ├── conf/
 │   ├── config.cfg          # Core configuration
-│   └── *.pid               # Process identifier files
+│   ├── *.pid               # Process identifier files
+│   ├── wallpaper_last_check.txt        # Wallpaper server-check cooldown
+│   └── screensaver_installed_date.txt  # Date of the currently-installed screensaver
 ├── logs/
 │   ├── app.log              # Master application log
 │   └── update.log           # Update log
-└── tmp/                     # Cached images
+├── wallpapers/              # Dated daily wallpaper cache (<date>.png)
+├── ss_backup/               # Backup of your screensaver images while wallpaper mode is active
+└── tmp/                     # Temporary cache
 ```
 
 If you encounter issues, please check the log file at `/mnt/us/OmniView/logs/app.log`.

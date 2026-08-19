@@ -13,12 +13,26 @@
                     "refresh": false
                 },
                 {
-                    "name": "Start Frame (启动相框)",
+                    "name": "Start (启动)",
                     "priority": 1,
-                    "action": "bin/omniview.sh",
-                    "params": "start",
-                    "exitmenu": true,
-                    "refresh": false
+                    "items": [
+                        {
+                            "name": "Photo Frame (直接启动相框)",
+                            "priority": 0,
+                            "action": "bin/omniview.sh",
+                            "params": "start",
+                            "exitmenu": true,
+                            "refresh": false
+                        },
+                        {
+                            "name": "Screensaver Wallpaper (屏保壁纸模式)",
+                            "priority": 1,
+                            "action": "bin/omniview.sh",
+                            "params": "start-screensaver",
+                            "exitmenu": false,
+                            "refresh": false
+                        }
+                    ]
                 },
                 {
                     "name": "Stop Frame (停止相框)",
