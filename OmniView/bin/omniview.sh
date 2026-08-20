@@ -16,6 +16,24 @@ SOURCE_UPSTART="$EXT_DIR/upstart/bookshelf-sync.conf"
 
 # --- Initialization ---
 
+# Rootfs write access. "/" is mounted RO at runtime; /usr/sbin/mntroot exists on
+# some jailbreaks but is often NOT on PATH (KUAL/ssh use a minimal PATH), and
+# older jailbreaks lack it entirely — fall back to a raw remount.
+rootfs_rw() {
+    if [ -x /usr/sbin/mntroot ]; then
+        /usr/sbin/mntroot rw
+    else
+        mount -o remount,rw /dev/root /
+    fi
+}
+rootfs_ro() {
+    if [ -x /usr/sbin/mntroot ]; then
+        /usr/sbin/mntroot ro
+    else
+        mount -o remount,ro /dev/root /
+    fi
+}
+
 init() {
     # Validate binary exists
     if [ ! -f "$CLIENT_BIN" ]; then
@@ -256,19 +274,86 @@ cmd_start_screensaver() {
         exit 1
     fi
 
-    # Enable auto-refresh: install upstart + autostart flag + start monitor
+    SS_TARGET="/usr/share/blanket/screensaver"
+    SS_OURDIR="$WORK_DIR/screensavers"
+
+    # --- 0. 占用探测（安装前必须认定安全；与 Go redirect.Probe 同语义） ---
+    if awk -v t="$SS_TARGET" '$5 == t { found = 1 } END { exit !found }' /proc/self/mountinfo 2>/dev/null; then
+        bottom_msg "屏保路径被其他插件占用，请先停用 ScreenSavers Hack 后重试"
+        log "screensaver: blocked ($SS_TARGET is a mount point)"
+        return 2
+    fi
+    if [ -L "$SS_TARGET" ]; then
+        local cur
+        cur=$(readlink "$SS_TARGET")
+        if [ "$cur" != "$SS_OURDIR" ]; then
+            bottom_msg "屏保路径指向其他插件（$cur），请先停用后重试"
+            log "screensaver: blocked ($SS_TARGET -> $cur)"
+            return 2
+        fi
+    fi
+
+    # latent linkss：hack 的 boot job 会 bind 到我们 symlink 的解析目标（源目录），
+    # 造成重启后影子覆盖 + 我们的写入污染其目录——直接拦下要求先停用 hack。
+    if [ -f /mnt/us/linkss/auto ] || [ -f /mnt/us/linkss/mounted_ss ]; then
+        bottom_msg "检测到 ScreenSavers Hack 已启用，请先停用后再使用屏保模式"
+        log "screensaver: blocked (ScreenSavers Hack active)"
+        return 2
+    fi
+
+    # --- 1. symlink 安装（幂等；rootfs 手术） ---
+    mkdir -p "$SS_OURDIR"
+    install_ok=0
+    if [ -L "$SS_TARGET" ]; then
+        install_ok=1 # 已是我们的链接
+    elif [ -e "$SS_TARGET" ]; then
+        rootfs_rw 2>/dev/null
+        mv "$SS_TARGET" "$SS_TARGET.bak" && {
+            ln -s "$SS_OURDIR" "$SS_TARGET" && install_ok=1 || mv "$SS_TARGET.bak" "$SS_TARGET"
+        }
+        rootfs_ro 2>/dev/null
+    else
+        rootfs_rw 2>/dev/null
+        ln -s "$SS_OURDIR" "$SS_TARGET" && install_ok=1
+        rootfs_ro 2>/dev/null
+    fi
+    if [ "$install_ok" != "1" ]; then
+        bottom_msg "无法写入系统目录，屏保未生效"
+        log "screensaver: symlink install failed"
+        return 3
+    fi
+
+    # --- 2. 启用标记 + bookShelf 注册 + event-monitor ---
+    mkdir -p "$WORK_DIR/conf"
+    touch "$WORK_DIR/conf/ss_enabled"
+    # 防残留：被硬杀（kill -9）的 frame 会跳过 Go 清理，留下 preventScreenSaver=1，
+    # 导致休眠不进屏保——显式复位，保证原生屏保对于本模式生效。
+    lipc-set-prop com.lab126.powerd preventScreenSaver 0 2>/dev/null || true
     if [ ! -f "$UPSTART_CONF" ] && [ -f "$SOURCE_UPSTART" ]; then
-        cp "$SOURCE_UPSTART" "$UPSTART_CONF"
-        chmod 644 "$UPSTART_CONF"
-        log "Upstart script installed"
+        rootfs_rw 2>/dev/null
+        if cp "$SOURCE_UPSTART" "$UPSTART_CONF" 2>/dev/null; then
+            chmod 644 "$UPSTART_CONF"
+            /sbin/initctl start bookshelf-sync 2>/dev/null || true
+            log "bookshelf-sync upstart job registered"
+        else
+            log "WARN: cannot cp $SOURCE_UPSTART -> $UPSTART_CONF (boot refresh may not register)"
+        fi
+        rootfs_ro 2>/dev/null
     fi
     touch "$AUTOSTART_FLAG"
     _start_monitor
 
-    # Install today's wallpaper now
-    msg "Installing screensaver wallpaper..."
-    run_client "screensaver" "screensaver.log" "true"
-    bottom_msg "Screensaver wallpaper mode active"
+    # --- 3. 安装今日壁纸 + Verify；按退出码提示 ---
+    log "Executing: $CLIENT_BIN -mode screensaver"
+    "$CLIENT_BIN" -mode screensaver -workdir "$WORK_DIR" >> "$WORK_DIR/logs/screensaver.log" 2>&1
+    local rc=$?
+    case "$rc" in
+        0)  bottom_msg "Sleep wallpaper mode active" ;;
+        2)  bottom_msg "屏保路径被其他插件占用，请先停用 ScreenSavers Hack 后重试" ;;
+        3)  bottom_msg "屏保未生效，请查看日志" ;;
+        *)  msg "Failed. Check logs: logs/screensaver.log" ;;
+    esac
+    return "$rc"
 }
 
 cmd_stop() {
@@ -288,25 +373,51 @@ cmd_stop() {
         fi
         rm -f "$PID_FILE"
     fi
+    # 硬杀不触发 Go 清理：显式复位 preventScreenSaver，避免休眠不进屏保
+    lipc-set-prop com.lab126.powerd preventScreenSaver 0 2>/dev/null || true
 
     # 2. Stop the event monitor (stops wallpaper + bookshelf auto-refresh)
     _stop_monitor
 
-    # 3. Restore the user's linkss wallpapers (remove our bg_ss00.png,
-    #    move ss_backup/* back into the screensaver folder)
-    log "Restoring user wallpapers..."
-    run_client "screensaver-restore" "restore.log" "false"
+    # 3. Stop wallpaper mode: restore the system screensaver dir from backup,
+    #    clear the durable flag, stop the monitor. /etc is RO at runtime.
+    run_client "screensaver-restore" "restore.log" "false"   # Go: 删 ss_enabled
+    SS_TARGET="/usr/share/blanket/screensaver"
+    rootfs_rw 2>/dev/null
+    if [ -L "$SS_TARGET" ]; then
+        # 防御：只删指向我们的链接
+        [ "$(readlink "$SS_TARGET")" = "$WORK_DIR/screensavers" ] && rm -f "$SS_TARGET"
+    fi
+    if [ -d "$SS_TARGET.bak" ]; then
+        if awk -v t="$SS_TARGET" '$5 == t { found = 1 } END { exit !found }' /proc/self/mountinfo 2>/dev/null; then
+            log "WARN: screensaver dir occupied by another mount — omitting restore (stop the plugin, re-run stop)"
+            bottom_msg "屏保路径仍被挂载占用，请先停用插件后重试"
+        else
+            mv "$SS_TARGET.bak" "$SS_TARGET" || log "WARN: restore mv failed ($SS_TARGET.bak retained)"
+        fi
+    else
+        mkdir -p "$SS_TARGET"
+    fi
+    rootfs_ro 2>/dev/null
 
     if [ $stopped_any -eq 1 ]; then
-        bottom_msg "Stopped & wallpapers restored"
+        bottom_msg "Stopped & screensavers restored"
     else
-        bottom_msg "Wallpapers restored"
+        bottom_msg "Screensavers restored"
     fi
 }
 
 cmd_register() {
     msg "Starting Registration..."
     run_client "register" "app.log"
+    # 以 config.cfg 是否真实写入 REGISTERED=1 判定成功（Go 所有退出路径均 rc0，
+    # 超时/失败也返回 0）；该行由 updateConfigRegistered 以无引号整数写入，
+    # 故 grep 精确匹配既可靠又可自愈（含 Already Registered 路径）。
+    if grep -q '^REGISTERED=1' "$WORK_DIR/conf/config.cfg" 2>/dev/null; then
+        mkdir -p "$WORK_DIR/conf"
+        touch "$WORK_DIR/conf/registered.flag"
+        log "registered.flag written"
+    fi
 }
 
 cmd_update() {
@@ -432,6 +543,40 @@ cmd_uninstall_autostart() {
     fi
 }
 
+cmd_uninstall() {
+    log "Uninstalling OmniView..."
+    # 杀 frame（若在跑）+ 停 monitor
+    if [ -f "$PID_FILE" ]; then
+        local pid=$(cat "$PID_FILE")
+        [ -d "/proc/$pid" ] && kill "$pid" 2>/dev/null
+        rm -f "$PID_FILE"
+    fi
+    _stop_monitor
+    # 还原系统屏保目录（防御：只删指向我们的 symlink；被挂载占用则跳过并提示）
+    SS_TARGET="/usr/share/blanket/screensaver"
+    rootfs_rw 2>/dev/null
+    if [ -L "$SS_TARGET" ] && [ "$(readlink "$SS_TARGET")" = "$WORK_DIR/screensavers" ]; then
+        rm -f "$SS_TARGET"
+    fi
+    if [ -d "$SS_TARGET.bak" ]; then
+        if awk -v t="$SS_TARGET" '$5 == t { found = 1 } END { exit !found }' /proc/self/mountinfo 2>/dev/null; then
+            log "WARN: screensaver dir occupied by another mount — omitting restore"
+            bottom_msg "屏保路径仍被挂载占用，未还原；请先停用占用插件"
+        else
+            mv "$SS_TARGET.bak" "$SS_TARGET" || log "WARN: restore mv failed ($SS_TARGET.bak retained)"
+        fi
+    else
+        mkdir -p "$SS_TARGET"
+    fi
+    rootfs_ro 2>/dev/null
+    # 清理运行时与持久状态
+    rm -f "$WORK_DIR/conf/ss_enabled" "$WORK_DIR/conf/registered.flag" /mnt/us/ENABLE_BOOKSHELF_AUTOSTART
+    rootfs_rw 2>/dev/null
+    rm -f /etc/upstart/bookshelf-sync.conf
+    rootfs_ro 2>/dev/null
+    bottom_msg "OmniView 已卸载（缓存与日志保留）"
+}
+
 # --- Main Entry Point ---
 
 # Initialize once
@@ -472,6 +617,9 @@ case "$1" in
     "uninstall-autostart")
         cmd_uninstall_autostart
         ;;
+    "uninstall")
+        cmd_uninstall
+        ;;
     "test")
         # Test command for debugging
         log "Test command executed"
@@ -480,7 +628,7 @@ case "$1" in
         bottom_msg "Debug log saved to /tmp/omniview-display.log"
         ;;
     *)
-        echo "Usage: $0 {start|start-screensaver|stop|register|update|sync|status|clear-cache|enable-autostart|disable-autostart|uninstall-autostart|test}"
+        echo "Usage: $0 {start|start-screensaver|stop|register|update|sync|status|clear-cache|enable-autostart|disable-autostart|uninstall-autostart|uninstall|test}"
 
         exit 1
         ;;

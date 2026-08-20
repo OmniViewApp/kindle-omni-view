@@ -7,44 +7,47 @@
                 {
                     "name": "Register Device (注册设备)",
                     "priority": 0,
+                    "if": "\"/mnt/us/OmniView/conf/registered.flag\" -f!",
                     "action": "bin/omniview.sh",
                     "params": "register",
                     "exitmenu": false,
-                    "refresh": false
+                    "refresh": true
                 },
                 {
-                    "name": "Start (启动)",
+                    "name": "卸载 (Uninstall)",
                     "priority": 1,
-                    "items": [
-                        {
-                            "name": "Photo Frame (直接启动相框)",
-                            "priority": 0,
-                            "action": "bin/omniview.sh",
-                            "params": "start",
-                            "exitmenu": true,
-                            "refresh": false
-                        },
-                        {
-                            "name": "Screensaver Wallpaper (屏保壁纸模式)",
-                            "priority": 1,
-                            "action": "bin/omniview.sh",
-                            "params": "start-screensaver",
-                            "exitmenu": false,
-                            "refresh": false
-                        }
-                    ]
+                    "if": "\"/mnt/us/OmniView/conf/registered.flag\" -f!",
+                    "action": "bin/omniview.sh",
+                    "params": "uninstall",
+                    "exitmenu": false,
+                    "refresh": true,
+                    "confirm": {
+                        "title": "卸载 OmniView？",
+                        "description": "将停止屏保/自动同步并还原系统屏保目录。下载缓存与日志保留。"
+                    }
                 },
                 {
-                    "name": "Stop Frame (停止相框)",
+                    "name": "启动休眠壁纸 (Sleep Wallpaper)",
                     "priority": 2,
+                    "if": "\"/mnt/us/OmniView/conf/registered.flag\" -f \"/mnt/us/OmniView/conf/ss_enabled\" -f! &&",
+                    "action": "bin/omniview.sh",
+                    "params": "start-screensaver",
+                    "exitmenu": false,
+                    "refresh": true
+                },
+                {
+                    "name": "停止运行 (休眠壁纸)",
+                    "priority": 3,
+                    "if": "\"/mnt/us/OmniView/conf/registered.flag\" -f \"/mnt/us/OmniView/conf/ss_enabled\" -f &&",
                     "action": "bin/omniview.sh",
                     "params": "stop",
                     "exitmenu": false,
-                    "refresh": false
+                    "refresh": true
                 },
                 {
                     "name": "Clear Cache (清除缓存)",
-                    "priority": 3,
+                    "priority": 4,
+                    "if": "\"/mnt/us/OmniView/conf/registered.flag\" -f",
                     "action": "bin/omniview.sh",
                     "params": "clear-cache",
                     "exitmenu": false,
@@ -52,7 +55,8 @@
                 },
                 {
                     "name": "Online Update (在线更新)",
-                    "priority": 4,
+                    "priority": 5,
+                    "if": "\"/mnt/us/OmniView/conf/registered.flag\" -f",
                     "action": "bin/omniview.sh",
                     "params": "update",
                     "exitmenu": false,
@@ -63,18 +67,12 @@
         {
             "name": "OmniBookShelf(书架)",
             "priority": 1,
+            "if": "\"/mnt/us/OmniView/conf/registered.flag\" -f",
             "items": [
                 {
-                    "name": "Register Device (注册设备)",
-                    "priority": 0,
-                    "action": "bin/omniview.sh",
-                    "params": "register",
-                    "exitmenu": false,
-                    "refresh": false
-                },
-                {
                     "name": "Sync Now (立即同步)",
-                    "priority": 1,
+                    "priority": 0,
+                    "if": "\"/mnt/us/OmniView/conf/registered.flag\" -f",
                     "action": "bin/omniview.sh",
                     "params": "sync",
                     "exitmenu": false,
@@ -82,43 +80,30 @@
                 },
                 {
                     "name": "View Status (查看状态)",
-                    "priority": 2,
+                    "priority": 1,
+                    "if": "\"/mnt/us/OmniView/conf/registered.flag\" -f",
                     "action": "bin/omniview.sh",
                     "params": "status",
                     "exitmenu": false,
                     "refresh": false
                 },
                 {
-                    "name": "Enable Auto-Sync (启用自动同步)",
-                    "priority": 3,
+                    "name": "启用自动同步 (Auto-Sync)",
+                    "priority": 2,
+                    "if": "\"/mnt/us/OmniView/conf/registered.flag\" -f \"/mnt/us/ENABLE_BOOKSHELF_AUTOSTART\" -f! &&",
                     "action": "bin/omniview.sh",
                     "params": "enable-autostart",
                     "exitmenu": false,
-                    "refresh": false
+                    "refresh": true
                 },
                 {
-                    "name": "Disable Auto-Sync (禁用自动同步)",
-                    "priority": 4,
+                    "name": "禁用自动同步 (Auto-Sync)",
+                    "priority": 3,
+                    "if": "\"/mnt/us/OmniView/conf/registered.flag\" -f \"/mnt/us/ENABLE_BOOKSHELF_AUTOSTART\" -f &&",
                     "action": "bin/omniview.sh",
                     "params": "disable-autostart",
                     "exitmenu": false,
-                    "refresh": false
-                },
-                {
-                    "name": "Uninstall Auto-Sync (卸载自动同步)",
-                    "priority": 5,
-                    "action": "bin/omniview.sh",
-                    "params": "uninstall-autostart",
-                    "exitmenu": false,
-                    "refresh": false
-                },
-                {
-                  "name": "Online Update (在线更新)",
-                  "priority": 6,
-                  "action": "bin/omniview.sh",
-                  "params": "update",
-                  "exitmenu": false,
-                  "refresh": false
+                    "refresh": true
                 }
             ]
         }

@@ -16,11 +16,13 @@ OmniView 是一个基于 KUAL 的 Kindle 插件，可将闲置的 Kindle 设备�
 - **优雅外观** - 支持自定义主题、名言展示及日历挂件
 - **防残影处理** - 启动时自动清屏，避免菜单残影
 
-### 🖼️ 屏保壁纸 (Screensaver Wallpaper)
+### 🖼️ 休眠壁纸 (Sleep Wallpaper)
 - **每日壁纸** - 将每日精选壁纸显示在 Kindle 原生锁屏/屏保界面，正常阅读完全不受影响
-- **零侵入** - 不接管屏幕、不强制休眠，依托 linkss 与原生屏保机制展示
+- **无需 ScreenSavers Hack** - 前置仅需越狱 + KUAL；OmniView 将 `/usr/share/blanket/screensaver` 变为指向 `/mnt/us/OmniView/screensavers` 的符号链接（一次性 rootfs 修改，原始目录备份为 `.bak`，重启后天然生效；不再需要任何自有 upstart job，也不依赖 ScreenSavers Hack）
+- **占用检测** - 若屏保目录被其他插件（如 ScreenSavers Hack）占用，KUAL 菜单会明确提示先停用，而非静默失败
+- **服务端直出 8-bit PNG** - 客户端不再做图片转换，服务端需直接返回 8-bit PNG
+- **OTA 后需重新启用** - OTA 升级会覆盖 rootfs，符号链接与 `.bak` 备份会被还原，请在 KUAL 菜单重新启用屏保壁纸模式以恢复
 - **智能缓存** - 每日图片仅下载一次，相框模式与屏保模式共享同一张图，避免重复下载
-- **自动恢复** - 您原有的屏保图会临时备份并自动恢复，绝不删除用户文件
 - **唤醒即刷新** - 锁屏后唤起或 WiFi 连接时自动拉取最新壁纸
 
 ### 📚 书架同步 (Bookshelf Sync)
@@ -118,23 +120,37 @@ OmniView 是一个基于 KUAL 的 Kindle 插件，可将闲置的 Kindle 设备�
 
 #### 3. 运行与停止
 
-在 **KUAL -> OmniView -> Start (启动)** 中选择模式：
+KUAL 菜单为**注册门槛**结构：未注册时主菜单（`OmniView(相框)`）仅显示 **「注册设备」** 与 **「卸载」** 两项；注册成功后，功能项才会出现。
 
-- **Photo Frame (直接启动相框)** - 经典相框模式，接管屏幕循环展示图片
-- **Screensaver Wallpaper (屏保壁纸模式)** - 安装每日壁纸到原生屏保界面，并启用自动刷新（锁屏唤起/WiFi 连接时自动拉取）。正常阅读不受影响
+注册后的菜单：
+```
+OmniView(相框)/
+├── 启动休眠壁纸 ↔ 停止运行   (单一启动项，随状态翻转)
+├── 清除缓存 (Clear Cache)
+└── 在线更新 (Online Update)
+OmniBookShelf(书架)/
+├── 立即同步 (Sync Now)
+├── 查看状态 (View Status)
+└── 启用自动同步 ↔ 禁用自动同步  (单一翻转项)
+```
 
-**停止运行**
-- 点击 **Stop Frame (停止相框)**：会停止相框、停止自动刷新监听，并恢复您原有的 linkss 屏保图片
-- 或按下电源键唤醒相框模式，待屏幕显示 `stopping...` 后自动退出至主页
+休眠壁纸为单一启动菜单项，状态会随启用情况自动翻转：
+
+- 未启用时显示 **「启动休眠壁纸」**，点击即安装每日壁纸到原生休眠屏保界面，并启用自动刷新（锁屏唤起/WiFi 连接时自动拉取）。正常阅读不受影响
+- 启动后 KUAL 刷新，菜单项变为 **「停止运行」**，点击即停止壁纸刷新监听，并恢复系统屏保目录（删除符号链接、还原 `.bak` 备份），回到框架默认屏保，菜单项再次翻回「启动休眠壁纸」
+
+**「卸载」** 用于彻底清理：停止屏保/自动同步、还原系统屏保目录；下载缓存与日志会保留，方便排查问题。
+
+> 相框模式（Photo Frame）已从 KUAL 菜单移除，为 CLI-only。如需相框常显（接管屏幕循环展示图片），可自行通过命令行运行 `-mode frame`。`uninstall-autostart` 同样为 CLI-only 命令（菜单项已移除），可用 `omniview.sh uninstall-autostart` 调用。
 
 #### 4. 书架同步 (Bookshelf)
 
-- **手动同步**: 点击 **Sync Bookshelf** 立即提取 Kindle 内的 `cc.db` 和 `My Clippings.txt` 并上传。
-- **自动同步**: 点击 **Enable Auto-Sync**。开启后，设备会在侦测到 WiFi 连接或系统唤醒时自动在后台静默同步数据。
-- **状态查看**: 点击 **Status** 可以在屏幕底部查看最后一次同步的时间及监听器运行状态。
+- **立即同步**: 点击 **立即同步 (Sync Now)** 立即提取 Kindle 内的 `cc.db` 和 `My Clippings.txt` 并上传。
+- **自动同步**: 点击 **启用自动同步 (Auto-Sync)**（已启用时显示「禁用自动同步」，点击即关闭）。开启后，设备会在侦测到 WiFi 连接或系统唤醒时自动在后台静默同步数据。
+- **状态查看**: 点击 **查看状态 (View Status)** 可以在屏幕底部查看最后一次同步的时间及监听器运行状态。
 
-#### 4. 状态查看 (Status)
-点击 **Status**，屏幕下方会短暂显示：
+#### 5. 状态查看 (Status)
+点击 **查看状态 (View Status)**，屏幕下方会短暂显示：
 - `Auto=Enabled/Disabled`: 自动同步开关状态
 - `Monitor=Running/Stopped`: 事件监听器状态
 - `LastSync`: 最近一次成功同步的时间
@@ -153,12 +169,11 @@ OmniView 是一个基于 KUAL 的 Kindle 插件，可将闲置的 Kindle 设备�
 │   ├── config.cfg          # 核心配置文件
 │   ├── *.pid               # 进程标识文件
 │   ├── wallpaper_last_check.txt    # 壁纸服务器检查冷却时间
-│   └── screensaver_installed_date.txt  # 当前屏保壁纸安装日期
 ├── logs/
 │   ├── app.log              # 运行总日志
 │   └── update.log           # 更新日志
 ├── wallpapers/              # 按日期缓存的每日壁纸 (<日期>.png)
-├── ss_backup/              # 屏保壁纸模式期间备份的原有屏保图
+├── screensavers/            # 屏保壁纸模式符号链接目标目录（/usr/share/blanket/screensaver 指向此目录）
 └── tmp/                     # 临时缓存
 ```
 

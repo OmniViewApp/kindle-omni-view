@@ -16,7 +16,7 @@ OmniView is a KUAL-based Kindle plugin that transforms your idle Kindle into a s
 - **Aesthetic Views** - Support for custom themes, elegant typography, and dynamic widgets
 - **Ghosting Prevention** - Automatically clears screen on startup to avoid menu residue
 
-### 🖼️ Screensaver Wallpaper
+### 🖼️ Sleep Wallpaper
 - **Daily Wallpaper** - Shows the daily featured image on the Kindle native lock/screensaver screen; normal reading is fully unaffected
 - **Non-intrusive** - No framebuffer takeover, no forced suspend; relies on the linkss hack and the native screensaver
 - **Smart Cache** - The daily image downloads once per day and is shared by both photo-frame and screensaver modes — no duplicate downloads
@@ -114,23 +114,37 @@ OmniView is a KUAL-based Kindle plugin that transforms your idle Kindle into a s
 
 #### 3. Running & Stopping
 
-Choose a mode under **KUAL -> OmniView -> Start**:
+The KUAL menu is **registration-gated**: while the device is unregistered the main menu (`OmniView(相框)`) shows only **Register Device** and **Uninstall**; once registered, the functional items appear.
 
-- **Photo Frame (直接启动相框)** - The classic frame mode; takes over the screen and cycles through images
-- **Screensaver Wallpaper (屏保壁纸模式)** - Installs the daily wallpaper onto the native screensaver and enables auto-refresh (pulls the latest on screen wake / WiFi connect). Normal reading is unaffected
+Registered menu:
+```
+OmniView(相框)/
+├── 启动休眠壁纸 ↔ 停止运行   (single start item, flips with state)
+├── Clear Cache (清除缓存)
+└── Online Update (在线更新)
+OmniBookShelf(书架)/
+├── Sync Now (立即同步)
+├── View Status (查看状态)
+└── 启用自动同步 ↔ 禁用自动同步  (single flip item)
+```
 
-**Stop Running**
-- Tap **Stop Frame (停止相框)**: stops the frame, stops the auto-refresh monitor, and restores your original linkss screensaver images
-- Or press the power button to wake from frame mode, wait for `stopping...` to appear, then it will exit to the home screen
+The Sleep Wallpaper entry is a single start item whose label flips with the enabled state:
+
+- While disabled it reads **「启动休眠壁纸」**; tapping it installs the daily wallpaper onto the native sleep/screensaver and enables auto-refresh (pulls the latest on screen wake / WiFi connect). Normal reading is unaffected
+- After starting, KUAL refreshes and the item becomes **「停止运行」**; tapping it stops the wallpaper/monitor and restores your original screensaver directory, flipping the label back
+
+**Uninstall** does a full cleanup: stops the screensaver/auto-sync and restores the system screensaver directory; downloaded cache and logs are retained for troubleshooting.
+
+> Photo Frame is no longer a KUAL menu entry — it is CLI-only. If you want the always-on photo-frame loop (take over the screen and cycle through images), run `-mode frame` from the command line yourself. `uninstall-autostart` is likewise a CLI-only command (menu item removed); invoke it via `omniview.sh uninstall-autostart`.
 
 #### 4. Bookshelf Synchronization
 
-- **Manual Sync**: Tap **Sync Bookshelf** to immediately extract `cc.db` and `My Clippings.txt` and upload them.
-- **Auto-Sync**: Tap **Enable Auto-Sync**. Once enabled, the device will silently sync data in the background whenever a WiFi connection or system wakeup is detected.
-- **Status Check**: Tap **Status** to see the last sync timestamp and listener status at the bottom of the screen.
+- **Sync Now**: Tap **Sync Now (立即同步)** to immediately extract `cc.db` and `My Clippings.txt` and upload them.
+- **Auto-Sync**: Tap **启用自动同步 (Auto-Sync)** (when already enabled it reads 「禁用自动同步」, tapping disables it). Once enabled, the device will silently sync data in the background whenever a WiFi connection or system wakeup is detected.
+- **Status Check**: Tap **View Status (查看状态)** to see the last sync timestamp and listener status at the bottom of the screen.
 
-#### 4. Status Check
-Tap **Status** to briefly display at the bottom:
+#### 5. Status Check
+Tap **View Status (查看状态)** to briefly display at the bottom:
 - `Auto=Enabled/Disabled`: Auto-sync status
 - `Monitor=Running/Stopped`: Event listener status
 - `LastSync`: Timestamp of the last successful sync
