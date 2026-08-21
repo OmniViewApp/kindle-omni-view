@@ -251,6 +251,16 @@ _stop_monitor() {
     fi
 }
 
+# The event monitor is shared by two independent features (screensaver wallpaper
+# and bookshelf auto-sync). Keep it running iff at least one is enabled.
+_refresh_monitor() {
+    if [ -f "$WORK_DIR/conf/ss_enabled" ] || [ -f "$AUTOSTART_FLAG" ]; then
+        _start_monitor
+    else
+        _stop_monitor
+    fi
+}
+
 # --- User Commands ---
 
 cmd_start() {
@@ -329,19 +339,18 @@ cmd_start_screensaver() {
     # 防残留：被硬杀（kill -9）的 frame 会跳过 Go 清理，留下 preventScreenSaver=1，
     # 导致休眠不进屏保——显式复位，保证原生屏保对于本模式生效。
     lipc-set-prop com.lab126.powerd preventScreenSaver 0 2>/dev/null || true
-    if [ ! -f "$UPSTART_CONF" ] && [ -f "$SOURCE_UPSTART" ]; then
+    if [ -f "$SOURCE_UPSTART" ]; then
         rootfs_rw 2>/dev/null
         if cp "$SOURCE_UPSTART" "$UPSTART_CONF" 2>/dev/null; then
             chmod 644 "$UPSTART_CONF"
             /sbin/initctl start bookshelf-sync 2>/dev/null || true
-            log "bookshelf-sync upstart job registered"
+            log "bookshelf-sync upstart job (re)installed"
         else
             log "WARN: cannot cp $SOURCE_UPSTART -> $UPSTART_CONF (boot refresh may not register)"
         fi
         rootfs_ro 2>/dev/null
     fi
-    touch "$AUTOSTART_FLAG"
-    _start_monitor
+    _refresh_monitor
 
     # --- 3. 安装今日壁纸 + Verify；按退出码提示 ---
     log "Executing: $CLIENT_BIN -mode screensaver"
@@ -376,11 +385,8 @@ cmd_stop() {
     # 硬杀不触发 Go 清理：显式复位 preventScreenSaver，避免休眠不进屏保
     lipc-set-prop com.lab126.powerd preventScreenSaver 0 2>/dev/null || true
 
-    # 2. Stop the event monitor (stops wallpaper + bookshelf auto-refresh)
-    _stop_monitor
-
-    # 3. Stop wallpaper mode: restore the system screensaver dir from backup,
-    #    clear the durable flag, stop the monitor. /etc is RO at runtime.
+    # 2. Stop wallpaper mode: restore the system screensaver dir from backup,
+    #    clear the durable flag. /etc is RO at runtime.
     run_client "screensaver-restore" "restore.log" "false"   # Go: 删 ss_enabled
     SS_TARGET="/usr/share/blanket/screensaver"
     rootfs_rw 2>/dev/null
@@ -399,6 +405,9 @@ cmd_stop() {
         mkdir -p "$SS_TARGET"
     fi
     rootfs_ro 2>/dev/null
+
+    # 3. Refresh the shared monitor: keep it only if bookshelf autostart is still on.
+    _refresh_monitor
 
     if [ $stopped_any -eq 1 ]; then
         bottom_msg "Stopped & screensavers restored"
@@ -492,24 +501,28 @@ cmd_enable_autostart() {
         exit 1
     fi
 
-    # Install upstart config if needed
-    if [ ! -f "$UPSTART_CONF" ]; then
-        if [ -f "$SOURCE_UPSTART" ]; then
-            cp "$SOURCE_UPSTART" "$UPSTART_CONF"
+    # (Re)install the upstart config so it stays current across upgrades (it
+    # also carries the boot self-heal for the screensaver symlink).
+    if [ -f "$SOURCE_UPSTART" ]; then
+        rootfs_rw 2>/dev/null
+        if cp "$SOURCE_UPSTART" "$UPSTART_CONF" 2>/dev/null; then
             chmod 644 "$UPSTART_CONF"
-            log "Upstart script installed"
+            log "Upstart script (re)installed"
         else
-            bottom_msg "Error: Upstart source missing"
-            log "ERROR: $SOURCE_UPSTART not found"
-            exit 1
+            log "WARN: cannot cp $SOURCE_UPSTART -> $UPSTART_CONF"
         fi
+        rootfs_ro 2>/dev/null
+    else
+        bottom_msg "Error: Upstart source missing"
+        log "ERROR: $SOURCE_UPSTART not found"
+        exit 1
     fi
 
     # Enable autostart flag
     touch "$AUTOSTART_FLAG"
 
-    # Start event monitor
-    _start_monitor
+    # Start/refresh the shared event monitor
+    _refresh_monitor
 
     bottom_msg "Auto-Sync Enabled"
     log "Auto-sync enabled"
@@ -524,8 +537,8 @@ cmd_disable_autostart() {
 
     rm -f "$AUTOSTART_FLAG"
 
-    # Stop monitor if running
-    _stop_monitor
+    # Refresh the shared monitor: keep it if screensaver is still on.
+    _refresh_monitor
 
     bottom_msg "Auto-Sync Disabled"
     log "Auto-sync disabled"

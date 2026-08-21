@@ -22,6 +22,7 @@ OmniView is a KUAL-based Kindle plugin that transforms your idle Kindle into a s
 - **Smart Cache** - The daily image downloads once per day and is shared by both photo-frame and screensaver modes — no duplicate downloads
 - **Auto-restore** - Your existing screensaver images are temporarily backed up and automatically restored; your files are never deleted
 - **Wake = Refresh** - Pulls the latest wallpaper on screen wake (`outOfScreenSaver`) and WiFi connect
+- **⚠️ Before factory reset** - A factory reset wipes `/mnt/us` but not the rootfs symlink/`.bak`, which can leave the lock screen broken. Stop the mode (tap **「停止运行」**) before resetting. If already broken, reinstall OmniView and tap **Uninstall** to restore the backup.
 
 ### 📚 Bookshelf Sync
 - **Note Extraction** - Automatically extracts book info and reading notes (My Clippings.txt) from your Kindle
